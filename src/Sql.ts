@@ -10,9 +10,9 @@ export class Query {
   /** Query title */
   title?: string
   /** Sql command */
-  sql: string
+  query: string
   /** Sql parameter */
-  prms?: any[]
+  args?: any[]
   /** 
    * Set data after execute done
    * 
@@ -88,27 +88,27 @@ export class Sql extends Tag {
       let query: Query
       if (typeof q === 'string') {
         query = {
-          sql: q.trim(),
-          prms: []
+          query: q.trim(),
+          args: []
         } as Query
       } else {
         query = q as Query
-        if (!query.prms) query.prms = []
+        if (!query.args) query.args = []
       }
       if (!this.slient && query.title) this.context.group('QuerySQL: %s', query.title)
       const begin = Date.now()
-      const [rs,] = await this._db.raw(query.sql, ...query.prms)
+      const [rs,] = await this._db.raw(query.query, ...query.args)
       const res = {
         time: Date.now() - begin,
         result: !rs ? rs : JSON.parse(JSON.stringify(rs))
       }
       if (!this.slient) {
-        this.context.log(`${chalk.green('%s')} ${chalk.gray('- %dms')}`, query.sql, res.time)
+        this.context.log(`${chalk.green('%s')} ${chalk.gray('- %dms')}`, query.args, res.time)
         if (res.result) {
           this.context.Utils.json(res.result).split('\n').map(e => this.context.log(chalk.yellow(e)))
         }
       }
-      if (query.var) this.setVar(query.var, res)
+      if (query.var) this.setVar(query.var, res.result)
       if (!this.slient && query.title) this.context.groupEnd()
     }
   }
@@ -117,3 +117,13 @@ export class Sql extends Tag {
     await this._db.destroy()
   }
 }
+
+/**
+ * Execute mysql query
+ */
+export class MySql extends Sql { }
+
+/**
+ * Execute postgreSQL query
+ */
+export class PostgreSql extends Sql { }
