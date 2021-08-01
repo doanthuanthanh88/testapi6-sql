@@ -60,8 +60,8 @@ export class Sql extends Tag {
   var: string | { [key: string]: any }
   _db: Knex
 
-  constructor(attrs: Sql) {
-    super(attrs)
+  init(attrs: Sql) {
+    super.init(attrs)
     if (!this.config) this.config = {} as any
     if (this.connection) {
       this.config.connection = this.connection
@@ -100,12 +100,14 @@ export class Sql extends Tag {
       const [rs,] = await this._db.raw(query.query, ...query.args)
       const res = {
         time: Date.now() - begin,
-        result: !rs ? rs : JSON.parse(JSON.stringify(rs))
+        result: !rs ? rs : typeof rs === 'object' ? JSON.parse(JSON.stringify(rs)) : rs
       }
       if (!this.slient) {
         this.context.log(`${chalk.green('%s')} ${chalk.gray('- %dms')}`, query.args, res.time)
-        if (res.result) {
-          this.context.Utils.json(res.result).split('\n').map(e => this.context.log(chalk.yellow(e)))
+        if (res.result && typeof res.result === 'object') {
+          this.context.log(chalk.yellow('%s'), this.context.Utils.json(res.result))
+        } else {
+          this.context.log(chalk.yellow('%s'), res.result)
         }
       }
       if (query.var) this.setVar(query.var, res.result)
