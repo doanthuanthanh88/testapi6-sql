@@ -27,7 +27,24 @@ export class Query {
 /**
  * Execute sql query
  */
-export class Sql extends Tag {
+export abstract class Sql extends Tag {
+  static get des() {
+    return `Execute SQL queries (mysql, postgreSQL)`
+  }
+  static get example() {
+    return `# Read more configuration: https://www.npmjs.com/package/knex
+- testapi6-sql.Sql:
+    connection: mysql://root:root@localhost/mydb
+    # connection: postgres://root:root@localhost/mydb
+    queries: 
+      - select * from user
+      - title: Get users
+        sql: select * from users where id = ?
+        prms: 
+          - 123
+        var: rs
+`
+  }
   /** 
    * Sql connection string 
    * 
@@ -82,6 +99,8 @@ export class Sql extends Tag {
     })
   }
 
+  abstract getResult(rs: any): any
+
   async exec() {
     if (!this.slient && this.title) this.context.group(chalk.green('%s'), this.title)
     for (const q of this.queries) {
@@ -97,7 +116,7 @@ export class Sql extends Tag {
       }
       if (!this.slient && query.title) this.context.group('QuerySQL: %s', query.title)
       const begin = Date.now()
-      const [rs,] = await this._db.raw(query.query, ...query.args)
+      const rs = this.getResult(await this._db.raw(query.query, ...query.args))
       const res = {
         time: Date.now() - begin,
         result: !rs ? rs : typeof rs === 'object' ? JSON.parse(JSON.stringify(rs)) : rs
@@ -123,9 +142,49 @@ export class Sql extends Tag {
 /**
  * Execute mysql query
  */
-export class MySql extends Sql { }
+export class MySql extends Sql {
+  static get des() {
+    return `Execute SQL queries in MySQL`
+  }
+  static get example() {
+    return `# Read more configuration: https://www.npmjs.com/package/knex
+- testapi6-sql.MySql:
+    connection: mysql://root:root@localhost/mydb
+    queries: 
+      - select * from user
+      - title: Get users
+        sql: select * from users where id = ?
+        prms: 
+          - 123
+        var: rs
+`
+  }
+  getResult(rs: any) {
+    return rs ? rs[0] : rs
+  }
+}
 
 /**
  * Execute postgreSQL query
  */
-export class PostgreSql extends Sql { }
+export class PostgreSql extends Sql {
+  static get des() {
+    return `Execute SQL queries in PostgreSQL`
+  }
+  static get example() {
+    return `# Read more configuration: https://www.npmjs.com/package/knex
+- testapi6-sql.PostgreSql:
+    connection: postgres://root:root@localhost/mydb
+    queries: 
+      - select * from user
+      - title: Get users
+        sql: select * from users where id = ?
+        prms: 
+          - 123
+        var: rs
+`
+  }
+  getResult(rs: any) {
+    return rs?.rows
+  }
+}

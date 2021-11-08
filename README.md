@@ -16,22 +16,21 @@ npm install -g testapi6-sql
 yarn global add testapi6-sql
 ```
 
+# Configuration
+
+Read [knex](https://www.npmjs.com/package/knex)
+
 ### Use in yaml
 ```yaml
-# - Exec:
-#     args:
-#       - yarn global add testapi6-sql
-- Require:
-    modules:
-      - /Users/${USER}/testapi6-sql/dist # Path to plugin
-# Find more: 
-- Sql:
+- testapi6-sql.Sql:
     connection: mysql://root:root@localhost/mydb
     # connection: postgres://root:root@localhost/mydb
     queries: 
+      - select * from user
       - title: Get users
-        sql: select * from users
-        prms: []
+        sql: select * from users where id = ?
+        prms: 
+          - 123
         var: rs
 - Echo: ${rs}
 ```

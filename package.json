@@ -1,7 +1,7 @@
 {
   "name": "testapi6-sql",
-  "version": "1.2.1",
-  "description": "Create tag to execute sql(mysql, postgres...) in testapi6",
+  "version": "1.2.3",
+  "description": "Create tag to execute sql(mysql, postgres) in testapi6",
   "main": "dist/index.js",
   "scripts": {
     "doc": "yarn clean && typedoc --plugin typedoc-plugin-markdown --tsconfig tsconfig.doc.json --watch src/index.ts",
